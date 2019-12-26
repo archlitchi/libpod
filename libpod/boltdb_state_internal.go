@@ -2,6 +2,7 @@ package libpod
 
 import (
 	"bytes"
+	"fmt"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -239,6 +240,7 @@ func (s *BoltState) getDBCon() (*bolt.DB, error) {
 	// https://www.sqlite.org/src/artifact/c230a7a24?ln=994-1081
 	s.dbLock.Lock()
 
+	fmt.Println("s.dbPath",s.dbPath)
 	db, err := bolt.Open(s.dbPath, 0600, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error opening database %s", s.dbPath)

@@ -2,6 +2,7 @@ package restful
 
 import (
 	"fmt"
+	"strings"
 //	"log"
 //	"net"
 //	"io/ioutil"
@@ -18,8 +19,12 @@ func createcmdfromconfig(w http.ResponseWriter,config *container.Config) string 
 	if config.Image != ""{
 		s = fmt.Sprintf("%s %s ",s,config.Image)
 	}
-	s = fmt.Sprintln(s,config.Cmd)
-//	if config.Cmd != nil
+
+	if config.Cmd != nil {
+		temp := fmt.Sprint(config.Cmd)
+		s = fmt.Sprintln(s,strings.Trim(temp,"[]"))
+	}
+		//	if config.Cmd != nil
 	fmt.Fprintln(w,"createdcmdline=",s)
 	return s
 }
