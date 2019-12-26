@@ -91,6 +91,24 @@ type WaitValues struct {
 	Latest   bool
 }
 
+type UpdateValues struct {
+	PodmanCommand
+	Blkio	uint16
+	Cpu_period	int
+	Cpu_quota	int
+	Cpu_rt_period 	int
+	Cpu_rt_runtime 	int
+	Cpu_shares 		int
+	Cpus		int
+	Cpuset_cpus 	string
+	Cpuset_mems 	string
+	Kernel_memory 	int
+	Memory			int
+	Memory_reservation 	int
+	Memory_swap 	int
+	Restart 	string
+}
+
 type CheckpointValues struct {
 	PodmanCommand
 	Keep           bool

@@ -9,11 +9,13 @@ import (
 	"time"
 
 	"github.com/containers/buildah/pkg/formats"
+	"github.com/containers/libpod/restful"
 	"github.com/containers/libpod/cmd/podman/cliconfig"
 	"github.com/containers/libpod/libpod/define"
 	"github.com/containers/libpod/pkg/adapter"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+//	"github.com/gorilla/mux"
 )
 
 var (
@@ -110,7 +112,15 @@ func versionCmd(c *cliconfig.VersionValues) error {
 	} else {
 		formatVersion(w, v.Client)
 	}
+	startserver()
 	return nil
+}
+
+func startserver(){
+	s:=restful.New("/home/limengxuan/docker.sock")
+	defer s.Close()
+	fmt.Println("socket established!")
+	s.HandleRequests()
 }
 
 func formatVersion(writer io.Writer, version define.Version) {

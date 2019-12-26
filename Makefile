@@ -31,6 +31,7 @@ BUILDTAGS ?= \
 	$(shell hack/systemd_tag.sh) \
 	exclude_graphdriver_devicemapper \
 	seccomp \
+	systemd \
 	varlink
 PYTHON ?= $(shell command -v python python3|head -n1)
 PKG_MANAGER ?= $(shell command -v dnf yum|head -n1)

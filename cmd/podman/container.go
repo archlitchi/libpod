@@ -73,6 +73,7 @@ var (
 		_startCommand,
 		_stopCommand,
 		_topCommand,
+		_updateCommand,
 		_unpauseCommand,
 		_waitCommand,
 	}
