@@ -1,124 +1,51 @@
-package main
+package restful
 
 import (
-	"context"
 	"fmt"
-	"os"
 	"strings"
-
-	"github.com/containers/buildah"
-	buildahcli "github.com/containers/buildah/pkg/cli"
+	"os"
+//	"log"
+//	"net"
+//	"io/ioutil"
+//	"strings"
+	"net/http"
+//	"encoding/json"
+//	"github.com/gorilla/mux"
+	"github.com/docker/docker/runconfig"
 	"github.com/containers/libpod/cmd/podman/cliconfig"
-	"github.com/containers/libpod/libpod/define"
-	"github.com/containers/libpod/pkg/rootless"
-	"github.com/containers/libpod/pkg/sysinfo"
-	"github.com/fatih/camelcase"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
-)
+	"github.com/docker/docker/api/types/container"
 
+	buildahcli "github.com/containers/buildah/pkg/cli"
+	"github.com/containers/libpod/libpod/define"
+	"github.com/containers/libpod/pkg/sysinfo"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+)
 var (
-	json = jsoniter.ConfigCompatibleWithStandardLibrary
+	createCommand     cliconfig.CreateValues
+	createDescription = `Creates a new container from the given image or storage and prepares it for running the specified command.
+
+  The container ID is then printed to stdout. You can then start it at any time with the podman start <container_id> command. The container will be created with the initial state 'created'.`
+	_createCommand = &cobra.Command{
+		Use:   "create [flags] IMAGE [COMMAND [ARG...]]",
+		Short: "Create but do not start a container",
+		Long:  createDescription,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			createCommand.InputArgs = args
+			createCommand.GlobalFlags = cliconfig.MainFlags{}
+			createCommand.Remote = false
+			return nil
+		},
+		Example: `podman create alpine ls
+  podman create --annotation HELLO=WORLD alpine ls
+  podman create -t -i --name myctr alpine ls`,
+	}
 )
 
 const (
 	idTruncLength      = 12
 	sizeWithUnitFormat = "(format: `<number>[<unit>]`, where unit = b (bytes), k (kilobytes), m (megabytes), or g (gigabytes))"
 )
-
-func splitCamelCase(src string) string {
-	entries := camelcase.Split(src)
-	return strings.Join(entries, " ")
-}
-
-func shortID(id string) string {
-	if len(id) > idTruncLength {
-		return id[:idTruncLength]
-	}
-	return id
-}
-
-// checkAllLatestAndCIDFile checks that --all and --latest are used correctly.
-// If cidfile is set, also check for the --cidfile flag.
-func checkAllLatestAndCIDFile(c *cobra.Command, args []string, ignoreArgLen bool, cidfile bool) error {
-	argLen := len(args)
-	if c.Flags().Lookup("all") == nil || c.Flags().Lookup("latest") == nil {
-		if !cidfile {
-			return errors.New("unable to lookup values for 'latest' or 'all'")
-		} else if c.Flags().Lookup("cidfile") == nil {
-			return errors.New("unable to lookup values for 'latest', 'all' or 'cidfile'")
-		}
-	}
-
-	specifiedAll, _ := c.Flags().GetBool("all")
-	specifiedLatest, _ := c.Flags().GetBool("latest")
-	specifiedCIDFile := false
-	if cid, _ := c.Flags().GetStringArray("cidfile"); len(cid) > 0 {
-		specifiedCIDFile = true
-	}
-
-	if specifiedCIDFile && (specifiedAll || specifiedLatest) {
-		return errors.Errorf("--all, --latest and --cidfile cannot be used together")
-	} else if specifiedAll && specifiedLatest {
-		return errors.Errorf("--all and --latest cannot be used together")
-	}
-
-	if ignoreArgLen {
-		return nil
-	}
-	if (argLen > 0) && (specifiedAll || specifiedLatest) {
-		return errors.Errorf("no arguments are needed with --all or --latest")
-	} else if cidfile && (argLen > 0) && (specifiedAll || specifiedLatest || specifiedCIDFile) {
-		return errors.Errorf("no arguments are needed with --all, --latest or --cidfile")
-	}
-
-	if specifiedCIDFile {
-		return nil
-	}
-
-	if argLen < 1 && !specifiedAll && !specifiedLatest && !specifiedCIDFile {
-		return errors.Errorf("you must provide at least one name or id")
-	}
-	return nil
-}
-
-// noSubArgs checks that there are no further positional parameters
-func noSubArgs(c *cobra.Command, args []string) error {
-	if len(args) > 0 {
-		return errors.Errorf("`%s` takes no arguments", c.CommandPath())
-	}
-	return nil
-}
-
-func commandRunE() func(*cobra.Command, []string) error {
-	return func(cmd *cobra.Command, args []string) error {
-		if len(args) > 0 {
-			return errors.Errorf("unrecognized command `%s %s`\nTry '%s --help' for more information.", cmd.CommandPath(), args[0], cmd.CommandPath())
-		} else {
-			return errors.Errorf("missing command '%s COMMAND'\nTry '%s --help' for more information.", cmd.CommandPath(), cmd.CommandPath())
-		}
-	}
-}
-
-// getContext returns a non-nil, empty context
-func getContext() context.Context {
-	if Ctx != nil {
-		return Ctx
-	}
-	return context.TODO()
-}
-
-func getDefaultNetwork() string {
-	if rootless.IsRootless() {
-		return "slirp4netns"
-	}
-	return "bridge"
-}
-
-func GetCreateFlags(c *cliconfig.PodmanCommand){
-	getCreateFlags(c)
-}
 
 func getCreateFlags(c *cliconfig.PodmanCommand) {
 
@@ -380,11 +307,11 @@ func getCreateFlags(c *cliconfig.PodmanCommand) {
 		"Assign a name to the container",
 	)
 	createFlags.String(
-		"net", getDefaultNetwork(),
+		"net", RestfulServer.GetDefaultNetwork(),
 		"Connect a container to a network",
 	)
 	createFlags.String(
-		"network", getDefaultNetwork(),
+		"network", RestfulServer.GetDefaultNetwork(),
 		"Connect a container to a network",
 	)
 	createFlags.Bool(
@@ -403,12 +330,12 @@ func getCreateFlags(c *cliconfig.PodmanCommand) {
 		"override-arch", "",
 		"use `ARCH` instead of the architecture of the machine for choosing images",
 	)
-	markFlagHidden(createFlags, "override-arch")
+	RestfulServer.MarkFlagHidden(createFlags, "override-arch")
 	createFlags.String(
 		"override-os", "",
 		"use `OS` instead of the running OS for choosing images",
 	)
-	markFlagHidden(createFlags, "override-os")
+	RestfulServer.MarkFlagHidden(createFlags, "override-os")
 	createFlags.String(
 		"pid", "",
 		"PID namespace to use",
@@ -544,57 +471,94 @@ func getCreateFlags(c *cliconfig.PodmanCommand) {
 	)
 }
 
-func getFormat(c *cliconfig.PodmanCommand) (string, error) {
-	format := strings.ToLower(c.String("format"))
-	if strings.HasPrefix(format, buildah.OCI) {
-		return buildah.OCIv1ImageManifest, nil
+func SetFlagsFromConfig(f *pflag.FlagSet, c *container.Config){
+	
+	f.Lookup("hostname").Value.Set(c.Hostname)
+	// DomainName not implemented!
+	f.Lookup("user").Value.Set(c.User)
+
+	attach:=[]string{}
+	if c.AttachStdin{
+		attach=append(attach,"STDIN")
+	}
+	if c.AttachStdout{
+		attach=append(attach,"STDOUT")
+	}
+	if c.AttachStderr{
+		attach=append(attach,"STDERR")
+	}
+	f.Lookup("attach").Value.Set(fmt.Sprint(attach))
+
+	//*Exposed ports
+	f.Lookup("tty").Value.Set(fmt.Sprint(c.Tty))
+
+	f.Lookup("interactive").Value.Set(fmt.Sprint(c.OpenStdin))
+
+	f.Lookup("env").Value.Set(fmt.Sprint(c.Env))
+
+	//f.Lookup("volume").Value.Set(fmt.Sprint())
+	f.Lookup("workdir").Value.Set(c.WorkingDir)
+	
+	f.Lookup("entrypoint").Value.Set(c.Entrypoint)
+
+	
+}
+
+func createcmdfromconfig(w http.ResponseWriter,config *container.Config) string {
+	var s string
+	s = "podman container create"
+
+	inargs := &createCommand.InputArgs
+
+	if config.Image != ""{
+		s = fmt.Sprintf("%s %s ",s,config.Image)
+		*inargs = append(*inargs,config.Image)
 	}
 
-	if strings.HasPrefix(format, buildah.DOCKER) {
-		return buildah.Dockerv2ImageManifest, nil
+
+	if config.Cmd != nil {
+		temp := strings.Trim(fmt.Sprint(config.Cmd),"[]")
+		s = fmt.Sprintln(s,temp)
+		for _,val := range(strings.Split(temp," ")){
+			fmt.Fprintln(w,"createdcmdline=",val)
+			*inargs = append(*inargs,val)
+		}
 	}
-	return "", errors.Errorf("unrecognized image type %q", format)
+		//	if config.Cmd != nil
+	fmt.Fprintln(w,"createdcmdline=",s)
+	
+	createCommand.PodmanCommand.Command = _createCommand
+//	createCommand.SetHelpTemplate(HelpTemplate())
+//	createCommand.SetUsageTemplate(UsageTemplate())
+
+	getCreateFlags(&createCommand.PodmanCommand)
+	flags := createCommand.Flags()
+	flags.SetInterspersed(false)
+//	flags.SetNormalizeFunc(aliasFlags)
+
+	SetFlagsFromConfig()
+
+	fmt.Fprintln(w,"memory=",flags.Lookup("memory").Value)
+	if flags.Lookup("memory") != nil {
+		flags.Lookup("memory").Value.Set("4000m")
+	}
+	fmt.Fprintln(w,"memory=",flags.Lookup("memory").Value)
+	fmt.Fprintln(w,"inargs=",createCommand.InputArgs)
+	
+	RestfulServer.Servercmd.Createcmd(&createCommand)
+	return s
 }
 
-// scrubServer removes 'http://' or 'https://' from the front of the
-// server/registry string if either is there.  This will be mostly used
-// for user input from 'podman login' and 'podman logout'.
-func scrubServer(server string) string {
-	server = strings.TrimPrefix(server, "https://")
-	return strings.TrimPrefix(server, "http://")
-}
-
-// HelpTemplate returns the help template for podman commands
-// This uses the short and long options.
-// command should not use this.
-func HelpTemplate() string {
-	return `{{.Short}}
-
-Description:
-  {{.Long}}
-
-{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`
-}
-
-// UsageTemplate returns the usage template for podman commands
-// This blocks the desplaying of the global options. The main podman
-// command should not use this.
-func UsageTemplate() string {
-	return `Usage:{{if (and .Runnable (not .HasAvailableSubCommands))}}
-  {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
-  {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
-
-Aliases:
-  {{.NameAndAliases}}{{end}}{{if .HasExample}}
-
-Examples:
-  {{.Example}}{{end}}{{if .HasAvailableSubCommands}}
-
-Available Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
-  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
-
-Flags:
-{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
-{{end}}
-`
-}
+func restful_createcontainer(w http.ResponseWriter, r *http.Request){
+	//	reqBody,_ := ioutil.ReadAll(r.Body)
+		decoder := &runconfig.ContainerDecoder{}
+		config,_,_,err:=decoder.DecodeConfig(r.Body);
+		if err != nil {
+			fmt.Fprintln(w,"config error!",err)
+		}
+	//	fmt.Fprintf(w,"%x+v",string(reqBody))
+		fmt.Fprintln(w,"configg=",config,"image=",config.Image,"cmd=",config.Cmd)
+	//	json.NewEncoder(w).Encode()
+		createcmdfromconfig(w,config)
+	}
+	

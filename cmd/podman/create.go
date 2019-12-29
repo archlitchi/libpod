@@ -45,6 +45,11 @@ func init() {
 	flags.SetNormalizeFunc(aliasFlags)
 }
 
+func CreateCmd(c *cliconfig.CreateValues) error {
+	c.PodmanCommand.Flags().Bool("trace",false,"trace usage")
+	return createCmd(c)
+}
+
 func createCmd(c *cliconfig.CreateValues) error {
 	if c.Bool("trace") {
 		span, _ := opentracing.StartSpanFromContext(Ctx, "createCmd")
@@ -76,6 +81,8 @@ func createCmd(c *cliconfig.CreateValues) error {
 }
 
 func createInit(c *cliconfig.PodmanCommand) error {
+	fmt.Println("createInit:",c,"args:","label=",c.InputArgs,c.StringArray("label"))
+//	fmt.Println("create_podcommand=",c.Command)	
 	if !remote && c.Bool("trace") {
 		span, _ := opentracing.StartSpanFromContext(Ctx, "createInit")
 		defer span.Finish()

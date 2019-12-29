@@ -32,6 +32,7 @@ import (
 const remote = false
 
 func init() {
+	fmt.Println("main_local.go")
 	cgroupManager := define.SystemdCgroupsManager
 	cgroupHelp := "Cgroup manager to use (cgroupfs or systemd)"
 	cgroupv2, _ := cgroups.IsCgroup2UnifiedMode()

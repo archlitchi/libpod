@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/containers/buildah/pkg/formats"
-	"github.com/containers/libpod/restful"
 	"github.com/containers/libpod/cmd/podman/cliconfig"
+	"github.com/containers/libpod/restful"
 	"github.com/containers/libpod/libpod/define"
 	"github.com/containers/libpod/pkg/adapter"
 	"github.com/pkg/errors"
@@ -26,7 +26,8 @@ var (
 		Short: "Display the Podman Version Information",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			versionCommand.InputArgs = args
-			versionCommand.GlobalFlags = MainGlobalOpts
+//			versionCommand.GlobalFlags = cliconfig.MainFlags{}
+//			versionCommand.GlobalFlags = MainGlobalOpts
 			versionCommand.Remote = remoteclient
 			return versionCmd(&versionCommand)
 		},
@@ -39,6 +40,8 @@ func init() {
 	flags := versionCommand.Flags()
 	flags.StringVarP(&versionCommand.Format, "format", "f", "", "Change the output format to JSON or a Go template")
 }
+
+
 func getRemoteVersion(c *cliconfig.VersionValues) (version define.Version, err error) {
 	runtime, err := adapter.GetRuntime(getContext(), &c.PodmanCommand)
 	if err != nil {
@@ -117,9 +120,18 @@ func versionCmd(c *cliconfig.VersionValues) error {
 }
 
 func startserver(){
+	if versionCommand.Flags().Lookup("trace") != nil{
+		fmt.Println("version trace not null!")
+	}
+	fmt.Println(versionCommand.Bool("trace"))
 	s:=restful.New("/home/limengxuan/docker.sock")
 	defer s.Close()
 	fmt.Println("socket established!")
+	restful.RestfulServer = new(cliconfig.RestfulServer)
+	cmdv := restful.RestfulServer
+	cmdv.InitRestfulServer()
+	cmdv.SetContainerCreatecmd(CreateCmd)
+	cmdv.SetMainGlobalOpts(&MainGlobalOpts)
 	s.HandleRequests()
 }
 
