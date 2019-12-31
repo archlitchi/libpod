@@ -1,0 +1,4 @@
+curl	--unix-socket /var/run/docker.sock	\
+			-H	"Content-Type:application/json"	\
+			-d '{"image":"alpine","cmd":["echo","helloworld"]}' \
+			-X POST http:/v1.24/containers/create

@@ -10,7 +10,7 @@ import (
 
 type RestfulServer struct{
 	Servercmd	struct{
-		Createcmd	func(c *CreateValues) error
+		Createcmd	func(c *CreateValues,ret *string) error
 	}
 	MainGlobalOpts	*MainFlags	
 }
@@ -19,7 +19,7 @@ func (r *RestfulServer) InitRestfulServer() {
 	r.MainGlobalOpts = nil 
 }
 
-func (r *RestfulServer) SetContainerCreatecmd(f func(c *CreateValues) error){
+func (r *RestfulServer) SetContainerCreatecmd(f func(c *CreateValues,ret *string) error){
 	r.Servercmd.Createcmd = f
 }
 

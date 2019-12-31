@@ -1,0 +1,32 @@
+curl	--unix-socket /home/limengxuan/docker.sock	\
+			-H	"Content-Type:application/json"	\
+			-d '{"image":"alphine",
+				"cmd":["echo","helloworld"],
+				"labels":{"aaaa":"bbbb","cccc":"dddd","eeee":"ffff"},
+				"env":["FOO=bar","BAZ=quux"],
+				"attachstdin":true,
+				"attachstdout":true,
+				"attachstderr":true,
+				"hostname":"aaaaaa",
+				"hostconfig":{
+					"binds":["/tmp:/tmp","cccc:dddd"],
+					"networkmode":"bridge",
+					"ipcmode":"iiiiii",
+					"init":true,
+					"memory":1,
+					"memoryswap":2,
+					"memoryreservation":3,
+					"kernelmemory":4,
+					"nanocpus":5,
+					"cpushares":512,
+					"cpuperiod":100000,
+					"cpuquota":50000,
+					"cpusetcpus":"0,1",
+					"cpusetmems":"0,1",
+					"memoryswappiness":60,
+					"oomkilldisable":true,
+					"pidslimit":6,
+					"cgroupparent":"afdasdf"
+				}
+			}'\
+			-X POST http:/lo/podman/container/create

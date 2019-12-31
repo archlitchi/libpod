@@ -119,6 +119,10 @@ func versionCmd(c *cliconfig.VersionValues) error {
 	return nil
 }
 
+func SetCommand(){
+	restful.SetCreatecommandfunc(Getcreatecommandfunc())
+}
+
 func startserver(){
 	if versionCommand.Flags().Lookup("trace") != nil{
 		fmt.Println("version trace not null!")
@@ -132,6 +136,7 @@ func startserver(){
 	cmdv.InitRestfulServer()
 	cmdv.SetContainerCreatecmd(CreateCmd)
 	cmdv.SetMainGlobalOpts(&MainGlobalOpts)
+	SetCommand()
 	s.HandleRequests()
 }
 
