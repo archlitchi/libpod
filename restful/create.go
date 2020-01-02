@@ -137,6 +137,7 @@ func setFlagsFromConfig(f *pflag.FlagSet, c *container.Config,h *container.HostC
 
 	f.Lookup("stop-timeout").Value.Set(fmt.Sprint(c.StopTimeout))
 
+	if h != nil{
 	if len(h.Binds) != 0{
 		for _,value:=range(h.Binds){
 			f.Lookup("volume").Value.Set(value)
@@ -189,7 +190,7 @@ func setFlagsFromConfig(f *pflag.FlagSet, c *container.Config,h *container.HostC
 	f.Lookup("oom-kill-disable").Value.Set(fmt.Sprint(*h.OomKillDisable))
 
 	f.Lookup("pids-limit").Value.Set(fmt.Sprint(*h.PidsLimit))
-
+	}
 	return nil
 }
 
