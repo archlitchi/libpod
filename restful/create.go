@@ -138,58 +138,58 @@ func setFlagsFromConfig(f *pflag.FlagSet, c *container.Config,h *container.HostC
 	f.Lookup("stop-timeout").Value.Set(fmt.Sprint(c.StopTimeout))
 
 	if h != nil{
-	if len(h.Binds) != 0{
-		for _,value:=range(h.Binds){
-			f.Lookup("volume").Value.Set(value)
+		if len(h.Binds) != 0{
+			for _,value:=range(h.Binds){
+				f.Lookup("volume").Value.Set(value)
+			}
 		}
-	}
 
-	if h.NetworkMode.IsNone(){
-		f.Lookup("network").Value.Set("host")
-	}else{
-		f.Lookup("network").Value.Set(fmt.Sprint(h.NetworkMode))
-	}
+		if h.NetworkMode.IsNone(){
+			f.Lookup("network").Value.Set("host")
+		}else{
+			f.Lookup("network").Value.Set(fmt.Sprint(h.NetworkMode))
+		}
 
-	f.Lookup("ipc").Value.Set(fmt.Sprint(h.IpcMode))
+		f.Lookup("ipc").Value.Set(fmt.Sprint(h.IpcMode))
 
-	f.Lookup("init").Value.Set(fmt.Sprint(*h.Init))
+		f.Lookup("init").Value.Set(fmt.Sprint(*h.Init))
 
-	//Resources:
-	f.Lookup("cpu-shares").Value.Set(fmt.Sprint(h.CPUShares))
+		//Resources:
+		f.Lookup("cpu-shares").Value.Set(fmt.Sprint(h.CPUShares))
 
-	if h.Memory!=0{
-		f.Lookup("memory").Value.Set(fmt.Sprint(h.Memory,"b"))
-	}
+		if h.Memory!=0{
+			f.Lookup("memory").Value.Set(fmt.Sprint(h.Memory,"b"))
+		}
 	
-	if h.NanoCPUs!=0{
-		f.Lookup("cpus").Value.Set(fmt.Sprint(h.NanoCPUs))
-	}
+		if h.NanoCPUs!=0{
+			f.Lookup("cpus").Value.Set(fmt.Sprint(h.NanoCPUs))
+		}
 
-	f.Lookup("cgroup-parent").Value.Set(h.CgroupParent)
+		f.Lookup("cgroup-parent").Value.Set(h.CgroupParent)
 
-	if h.BlkioWeight!=0{
-		f.Lookup("blkio-weigut").Value.Set(fmt.Sprint(h.BlkioWeight))
-	}
+		if h.BlkioWeight!=0{
+			f.Lookup("blkio-weigut").Value.Set(fmt.Sprint(h.BlkioWeight))
+		}
 
-	f.Lookup("cpu-period").Value.Set(fmt.Sprint(h.CPUPeriod))
+		f.Lookup("cpu-period").Value.Set(fmt.Sprint(h.CPUPeriod))
 
-	f.Lookup("cpu-quota").Value.Set(fmt.Sprint(h.CPUQuota))
+		f.Lookup("cpu-quota").Value.Set(fmt.Sprint(h.CPUQuota))
 
-	f.Lookup("cpuset-cpus").Value.Set(h.CpusetCpus)
+		f.Lookup("cpuset-cpus").Value.Set(h.CpusetCpus)
 
-	f.Lookup("cpuset-mems").Value.Set(h.CpusetMems)
+		f.Lookup("cpuset-mems").Value.Set(h.CpusetMems)
 
-	f.Lookup("kernel-memory").Value.Set(fmt.Sprint(h.KernelMemory,"b"))
+		f.Lookup("kernel-memory").Value.Set(fmt.Sprint(h.KernelMemory,"b"))
 
-	f.Lookup("memory-reservation").Value.Set(fmt.Sprint(h.MemoryReservation,"b"))
+		f.Lookup("memory-reservation").Value.Set(fmt.Sprint(h.MemoryReservation,"b"))
 
-	f.Lookup("memory-swap").Value.Set(fmt.Sprint(h.MemorySwap,"b"))
+		f.Lookup("memory-swap").Value.Set(fmt.Sprint(h.MemorySwap,"b"))
 
-	f.Lookup("memory-swappiness").Value.Set(fmt.Sprint(*h.MemorySwappiness))
+		f.Lookup("memory-swappiness").Value.Set(fmt.Sprint(*h.MemorySwappiness))
 
-	f.Lookup("oom-kill-disable").Value.Set(fmt.Sprint(*h.OomKillDisable))
+		f.Lookup("oom-kill-disable").Value.Set(fmt.Sprint(*h.OomKillDisable))
 
-	f.Lookup("pids-limit").Value.Set(fmt.Sprint(*h.PidsLimit))
+		f.Lookup("pids-limit").Value.Set(fmt.Sprint(*h.PidsLimit))
 	}
 	return nil
 }
@@ -220,7 +220,15 @@ func createcmdfromconfig(w http.ResponseWriter,config *container.Config,hostconf
 	}
 
 	var retval string
-	RestfulServer.Servercmd.Createcmd(&createCommand,&retval)
+	retval,err=RestfulServer.Servercmd.Createcmd(&createCommand)
+	if err != nil{
+		respond:=errorcreaterespond{
+			Message: err.Error(),
+		}
+		str,_:=json.Marshal(respond)
+		http.Error(w,string(str),400)
+		return err
+	}
 	respond := &acceptcreaterespond{
 		ID:retval,
 		Warnings:"null",
