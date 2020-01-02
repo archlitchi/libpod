@@ -73,6 +73,7 @@ func (s* HTTPServer) HandleRequests(){
 	podrouter.HandleFunc("/podman/containers/create",Createcontainer).Methods("POST")
 	podrouter.HandleFunc("/podman/containers/{id}/start",Startcontainer).Methods("POST")
 	podrouter.HandleFunc("/podman/containers/{id}",Removecontainer).Methods("DELETE")
+	podrouter.HandleFunc("/podman/containers/{id}/json",Inspectcontainer).Methods("GET")
 	log.Fatal(http.Serve(s.l,podrouter))
 }
 

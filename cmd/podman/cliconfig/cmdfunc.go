@@ -13,6 +13,7 @@ type RestfulServer struct{
 		Createcmd	func(c *CreateValues) (string,error)
 		Startcmd 	func(c *StartValues) error
 		Removecmd	func(c *RmValues) error
+		Inspectcmd 	func(c *InspectValues) error
 	}
 	MainGlobalOpts	*MainFlags	
 }
@@ -36,6 +37,12 @@ func (r *RestfulServer) SetContainerRemovecmd(f func(c *RmValues) error){
 	r.Servercmd.Removecmd = f
 }
 
+//SetContainerInspectcmd called by cmd/server to set the remove endpoint
+func (r *RestfulServer) SetContainerInspectcmd(f func(c *InspectValues) error){
+	r.Servercmd.Inspectcmd = f
+}
+
+//SetMainGlobalOpts called by cmd/server to set default podman configs
 func (r *RestfulServer) SetMainGlobalOpts(m *MainFlags){
 	r.MainGlobalOpts = m
 }

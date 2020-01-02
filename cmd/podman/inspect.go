@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/containers/buildah/pkg/formats"
@@ -37,9 +38,38 @@ var (
 		Example: `podman inspect alpine
   podman inspect --format "imageId: {{.Id}} size: {{.Size}}" alpine
   podman inspect --format "image: {{.ImageName}} driver: {{.Driver}}" myctr`,
-	}
+ 	}
 )
+//Restfulinspectinit init command function for api server
+func Restfulinspectinit() *cliconfig.InspectValues{
+	var restfulinspectCommand     cliconfig.InspectValues
+	restfulinspectCommand.PodmanCommand.Command = &cobra.Command{
+		Use:   "inspect [flags] CONTAINER | IMAGE",
+		Short: "Display the configuration of a container or image",
+		Long:  inspectDescription,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			restfulinspectCommand.InputArgs = args
+			restfulinspectCommand.GlobalFlags = MainGlobalOpts
+			restfulinspectCommand.Remote = remoteclient
+			return inspectCmd(&restfulinspectCommand)
+		},
+		Example: `podman inspect alpine
+  podman inspect --format "imageId: {{.Id}} size: {{.Size}}" alpine
+  podman inspect --format "image: {{.ImageName}} driver: {{.Driver}}" myctr`,
+	}
+	inspectInit(&restfulinspectCommand)
+	return &restfulinspectCommand
+}
 
+// Getinspectcommandfunc Generate cobra.command struct for restful api
+func Getinspectcommandfunc() func()*cliconfig.InspectValues{
+	return Restfulinspectinit
+}
+
+// InspectCmd Called from restfulAPI to execute create command
+func InspectCmd(c *cliconfig.InspectValues) error {
+	return inspectCmd(c)
+}
 func inspectInit(command *cliconfig.InspectValues) {
 	command.SetHelpTemplate(HelpTemplate())
 	command.SetUsageTemplate(UsageTemplate())
@@ -71,6 +101,7 @@ func init() {
 }
 
 func inspectCmd(c *cliconfig.InspectValues) error {
+	fmt.Println("inspect:",c.InputArgs,"size=",c.Bool("size"))
 	args := c.InputArgs
 	inspectType := c.TypeObject
 	latestContainer := c.Latest
@@ -129,7 +160,7 @@ func inspectCmd(c *cliconfig.InspectValues) error {
 		// default is json output
 		out = formats.JSONStructArray{Output: inspectedObjects}
 	}
-
+	fmt.Println("Inspect before out.out")
 	return out.Out()
 }
 
