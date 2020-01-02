@@ -81,7 +81,12 @@ func Getcreatecommandfunc() func()*cliconfig.CreateValues{
 
 // CreateCmd Called from restfulAPI to execute create command
 func CreateCmd(c *cliconfig.CreateValues,s *string) error {
-	return createCmd(c)
+	err:=createCmd(c)
+	if (err != nil){
+		fmt.Println("Createcmd error=",err.Error())
+	}
+	return err
+
 }
 
 func createCmd(c *cliconfig.CreateValues) error {
