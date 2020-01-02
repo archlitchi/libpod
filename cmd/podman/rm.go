@@ -34,6 +34,7 @@ var (
 	}
 )
 
+
 func init() {
 	rmCommand.Command = _rmCommand
 	rmCommand.SetHelpTemplate(HelpTemplate())
@@ -52,8 +53,58 @@ func init() {
 	markFlagHiddenForRemoteClient("storage", flags)
 }
 
+//Restfulremoveinit init command function for api server
+func Restfulremoveinit() *cliconfig.RmValues{
+
+	var restfulremoveCommand     cliconfig.RmValues
+	restfulremoveCommand.PodmanCommand.Command = &cobra.Command{
+		Use:   "rm [flags] CONTAINER [CONTAINER...]",
+		Short: "Remove one or more containers",
+		Long:  rmDescription,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			restfulremoveCommand.InputArgs = args
+			restfulremoveCommand.GlobalFlags = MainGlobalOpts
+			restfulremoveCommand.Remote = remoteclient
+			return rmCmd(&restfulremoveCommand)
+		},
+		Args: func(cmd *cobra.Command, args []string) error {
+			return checkAllLatestAndCIDFile(cmd, args, false, true)
+		},
+		Example: `podman rm imageID
+  podman rm mywebserver myflaskserver 860a4b23
+  podman rm --force --all
+  podman rm -f c684f0d469f2`,
+	}
+	restfulremoveCommand.SetHelpTemplate(HelpTemplate())
+	restfulremoveCommand.SetUsageTemplate(UsageTemplate())
+	flags := restfulremoveCommand.Flags()
+	flags.BoolVarP(&restfulremoveCommand.All, "all", "a", false, "Remove all containers")
+	flags.BoolVarP(&restfulremoveCommand.Ignore, "ignore", "i", false, "Ignore errors when a specified container is missing")
+	flags.BoolVarP(&restfulremoveCommand.Force, "force", "f", false, "Force removal of a running or unusable container.  The default is false")
+	flags.BoolVarP(&restfulremoveCommand.Latest, "latest", "l", false, "Act on the latest container podman is aware of")
+	flags.BoolVar(&restfulremoveCommand.Storage, "storage", false, "Remove container from storage library")
+	flags.BoolVarP(&restfulremoveCommand.Volumes, "volumes", "v", false, "Remove anonymous volumes associated with the container")
+	flags.StringArrayVarP(&restfulremoveCommand.CIDFiles, "cidfile", "", nil, "Read the container ID from the file")
+	markFlagHiddenForRemoteClient("ignore", flags)
+	markFlagHiddenForRemoteClient("cidfile", flags)
+	markFlagHiddenForRemoteClient("latest", flags)
+	markFlagHiddenForRemoteClient("storage", flags)
+	return &restfulremoveCommand
+}
+
+// Getremovecommandfunc Generate cobra.command struct for restful api
+func Getremovecommandfunc() func()*cliconfig.RmValues{
+	return Restfulremoveinit
+}
+
+// RemoveCmd Called from restfulAPI to execute create command
+func RemoveCmd(c *cliconfig.RmValues) error {
+	return rmCmd(c)
+}
+
 // rmCmd removes one or more containers
 func rmCmd(c *cliconfig.RmValues) error {
+	fmt.Println("rmCmd",c.InputArgs,"force=",c.Force,"volume=",c.Volumes)
 	runtime, err := adapter.GetRuntime(getContext(), &c.PodmanCommand)
 	if err != nil {
 		return errors.Wrapf(err, "could not get runtime")

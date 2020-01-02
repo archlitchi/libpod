@@ -46,7 +46,7 @@ func init() {
 	markFlagHiddenForRemoteClient("latest", flags)
 }
 
-//Restfulinit init command function for api server
+//Restfulstartinit init command function for api server
 func Restfulstartinit() *cliconfig.StartValues{
 
 	var restfulstartCommand     cliconfig.StartValues
@@ -79,18 +79,18 @@ func Restfulstartinit() *cliconfig.StartValues{
 	return &restfulstartCommand
 }
 
-// Getcreatecommand Generate cobra.command struct for restful api
+// Getstartcommandfunc Generate cobra.command struct for restful api
 func Getstartcommandfunc() func()*cliconfig.StartValues{
 	return Restfulstartinit
 }
 
-// CreateCmd Called from restfulAPI to execute create command
+// StartCmd Called from restfulAPI to execute create command
 func StartCmd(c *cliconfig.StartValues) error {
 	return startCmd(c)
 }
 
 func startCmd(c *cliconfig.StartValues) error {
-	fmt.Println("start",c,"args",c.InputArgs)
+	fmt.Println("start",c,"args",c.InputArgs,"detach=",c.DetachKeys)
 	
 	if !remoteclient && c.Bool("trace") {
 		span, _ := opentracing.StartSpanFromContext(Ctx, "startCmd")

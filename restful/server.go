@@ -19,6 +19,8 @@ type HTTPServer struct {
 }
 
 var podrouter *mux.Router
+
+//RestfulServer used by cmd/server to set the endpoint functions
 var RestfulServer	*cliconfig.RestfulServer
 
 func New(sockaddr string) *HTTPServer{
@@ -68,8 +70,9 @@ func (s* HTTPServer) HandleRequests(){
 	if podrouter == nil {
 		podrouter = mux.NewRouter().StrictSlash(true)
 	}
-	podrouter.HandleFunc("/podman/container/create",Createcontainer).Methods("POST")
-	podrouter.HandleFunc("/podman/container/{id}/start",Startcontainer).Methods("POST")
+	podrouter.HandleFunc("/podman/containers/create",Createcontainer).Methods("POST")
+	podrouter.HandleFunc("/podman/containers/{id}/start",Startcontainer).Methods("POST")
+	podrouter.HandleFunc("/podman/containers/{id}",Removecontainer).Methods("DELETE")
 	log.Fatal(http.Serve(s.l,podrouter))
 }
 

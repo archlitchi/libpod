@@ -12,6 +12,7 @@ type RestfulServer struct{
 	Servercmd	struct{
 		Createcmd	func(c *CreateValues) (string,error)
 		Startcmd 	func(c *StartValues) error
+		Removecmd	func(c *RmValues) error
 	}
 	MainGlobalOpts	*MainFlags	
 }
@@ -20,12 +21,19 @@ func (r *RestfulServer) InitRestfulServer() {
 	r.MainGlobalOpts = nil 
 }
 
+//SetContainerCreatecmd called by cmd/server to set the create endpoint
 func (r *RestfulServer) SetContainerCreatecmd(f func(c *CreateValues) (string,error)){
 	r.Servercmd.Createcmd = f
 }
 
+//SetContainerStartcmd called by cmd/server to set the start endpoint
 func (r *RestfulServer) SetContainerStartcmd(f func(c *StartValues) error){
 	r.Servercmd.Startcmd = f
+}
+
+//SetContainerRemovecmd called by cmd/server to set the remove endpoint
+func (r *RestfulServer) SetContainerRemovecmd(f func(c *RmValues) error){
+	r.Servercmd.Removecmd = f
 }
 
 func (r *RestfulServer) SetMainGlobalOpts(m *MainFlags){

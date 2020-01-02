@@ -36,9 +36,10 @@ func startserverCmd(c *cliconfig.StartserverValues) error {
 	return nil
 }
 
-func setCommand(){
+func setinitCommand(){
 	restful.SetCreatecommandfunc(Getcreatecommandfunc())
 	restful.SetStartcommandfunc(Getstartcommandfunc())
+	restful.SetRemovecommandfunc(Getremovecommandfunc())
 }
 
 func startserver(c *cliconfig.StartserverValues){
@@ -54,8 +55,9 @@ func startserver(c *cliconfig.StartserverValues){
 	cmdv.InitRestfulServer()
 	cmdv.SetContainerCreatecmd(CreateCmd)
 	cmdv.SetContainerStartcmd(StartCmd)
+	cmdv.SetContainerRemovecmd(RemoveCmd)
 	cmdv.SetMainGlobalOpts(&MainGlobalOpts)
-	setCommand()
+	setinitCommand()
 	s.HandleRequests()
 }
 

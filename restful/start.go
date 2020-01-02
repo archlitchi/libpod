@@ -3,20 +3,10 @@ package restful
 import(
 	"fmt"
 	"encoding/json"
-//	"errors"
-//	"strings"
-//	"log"
-//	"net"
 	"io/ioutil"
-//	"strings"
 	"net/http"
-//	"encoding/json"
-//	"github.com/gorilla/mux"
-//	"github.com/docker/docker/runconfig"
 	"github.com/containers/libpod/cmd/podman/cliconfig"
 	"github.com/gorilla/mux"
-//	"github.com/docker/docker/api/types/container"
-//	"github.com/spf13/pflag"
 )
 
 var (
@@ -33,13 +23,20 @@ func SetStartcommandfunc(f func()*cliconfig.StartValues){
 	reinitstartCommand = f
 }
 
+func processStartQueryParameters(r *http.Request){
+	if tmp:=r.URL.Query().Get("detachkeys");tmp!=""{
+		startCommand.Flags().Lookup("detach-keys").Value.Set(tmp)
+		startCommand.DetachKeys=tmp
+	}
+}
+
 //Startcontainer handle func called by restful server
 func Startcontainer(w http.ResponseWriter, r *http.Request){
 	vars:=mux.Vars(r)
 	key:=vars["id"]
-	fmt.Println("Startcontainer",key)
 	startCommand=*reinitstartCommand()
 	AddGlobal(startCommand.PodmanCommand.Flags())
+	processStartQueryParameters(r)
 
 	reqBody,_ := ioutil.ReadAll(r.Body)
 	if len(reqBody) != 0{

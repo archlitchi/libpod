@@ -10,8 +10,8 @@ import (
 //	"strings"
 	"net/http"
 	"encoding/json"
-//	"github.com/gorilla/mux"
 	"github.com/docker/docker/runconfig"
+//	"github.com/gorilla/mux"
 	"github.com/containers/libpod/cmd/podman/cliconfig"
 	"github.com/docker/docker/api/types/container"
 	"github.com/spf13/pflag"
@@ -41,6 +41,12 @@ func SetCreatecommandfunc(c func()*cliconfig.CreateValues){
 	reinitcreateCommand = c
 }
 
+func processCreateQueryParameters(r *http.Request){
+	fmt.Println("UUUUURL=",r.URL)
+	if tmp:=r.URL.Query().Get("name");tmp!=""{
+		createCommand.Flags().Lookup("name").Value.Set(tmp)
+	}
+}
 func setFlagsFromConfig(f *pflag.FlagSet, c *container.Config,h *container.HostConfig) error {
 	
 	var temp string
@@ -242,6 +248,9 @@ func createcmdfromconfig(w http.ResponseWriter,config *container.Config,hostconf
 //Createcontainer Handler function for container create in restful server
 func Createcontainer(w http.ResponseWriter, r *http.Request){
 	//	reqBody,_ := ioutil.ReadAll(r.Body)
+	//	fmt.Println("name=",r.URL.Query().Get("name"))
+		createCommand=*reinitcreateCommand()
+		processCreateQueryParameters(r)
 		decoder := &runconfig.ContainerDecoder{}
 		config,hostconfig,_,err:=decoder.DecodeConfig(r.Body);
 		if err != nil {
@@ -251,7 +260,6 @@ func Createcontainer(w http.ResponseWriter, r *http.Request){
 			fmt.Println("config error is null!",err)
 		}
 		fmt.Println("before createcmdfromconfig")
-		createCommand=*reinitcreateCommand()
 	//	fmt.Fprintln(w,"configg=",config,"image=",config.Image,"cmd=",config.Cmd)
 		createcmdfromconfig(w,config,hostconfig)
 	}

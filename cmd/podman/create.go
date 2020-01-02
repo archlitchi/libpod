@@ -130,6 +130,7 @@ func createInit(c *cliconfig.PodmanCommand) error {
 	"networkmode=",c.String("network"),
 	"ipc=",c.String("ipc"),
 	"init=",c.Bool("init"),
+	"name=",c.String("name"),
 	"memory=",c.String("memory"),
 	"memoryswap=",c.String("memory-swap"),
 	"memoryreservation=",c.String("memory-reservation"),
