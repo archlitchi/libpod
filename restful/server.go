@@ -69,6 +69,7 @@ func (s* HTTPServer) HandleRequests(){
 		podrouter = mux.NewRouter().StrictSlash(true)
 	}
 	podrouter.HandleFunc("/podman/container/create",Createcontainer).Methods("POST")
+	podrouter.HandleFunc("/podman/container/{id}/start",Startcontainer).Methods("POST")
 	log.Fatal(http.Serve(s.l,podrouter))
 }
 

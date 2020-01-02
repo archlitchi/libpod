@@ -19,15 +19,15 @@ import (
 
 var (
 	createCommand     cliconfig.CreateValues
-	reinitCommand	func()*cliconfig.CreateValues
+	reinitcreateCommand	func()*cliconfig.CreateValues
 )
 
-type acceptrespond struct{
+type acceptcreaterespond struct{
 	ID string `json:"ID"`
 	Warnings string `json:"warnings"`
 }
 
-type errorrespond struct{
+type errorcreaterespond struct{
 	Message string `json:"message"`
 }
 
@@ -38,7 +38,7 @@ const (
 
 //SetCreatecommandfunc Set the init function for cobra.command in create option
 func SetCreatecommandfunc(c func()*cliconfig.CreateValues){
-	reinitCommand = c
+	reinitcreateCommand = c
 }
 
 func setFlagsFromConfig(f *pflag.FlagSet, c *container.Config,h *container.HostConfig) error {
@@ -84,7 +84,6 @@ func setFlagsFromConfig(f *pflag.FlagSet, c *container.Config,h *container.HostC
 	if c.StdinOnce == true{
 		return errors.New("stdinonce not implemented")
 	}
-
 	if len(c.Env) != 0{
 		for _,value:=range(c.Env){
 			f.Lookup("env").Value.Set(value)
@@ -211,7 +210,7 @@ func createcmdfromconfig(w http.ResponseWriter,config *container.Config,hostconf
 	flags := createCommand.Flags()
 	err:=setFlagsFromConfig(flags,config,hostconfig)
 	if err!=nil{
-		respond:=errorrespond{
+		respond:=errorstartrespond{
 			Message: err.Error(),
 		}
 		str,_:=json.Marshal(respond)
@@ -221,7 +220,7 @@ func createcmdfromconfig(w http.ResponseWriter,config *container.Config,hostconf
 
 	var retval string
 	RestfulServer.Servercmd.Createcmd(&createCommand,&retval)
-	respond := &acceptrespond{
+	respond := &acceptcreaterespond{
 		ID:retval,
 		Warnings:"null",
 	}
@@ -242,10 +241,8 @@ func Createcontainer(w http.ResponseWriter, r *http.Request){
 			fmt.Println("config error is null!",err)
 		}
 		fmt.Println("before createcmdfromconfig")
-		createCommand=*reinitCommand()
-	//	fmt.Fprintf(w,"%x+v",string(reqBody))
+		createCommand=*reinitcreateCommand()
 	//	fmt.Fprintln(w,"configg=",config,"image=",config.Image,"cmd=",config.Cmd)
-	//	json.NewEncoder(w).Encode()
 		createcmdfromconfig(w,config,hostconfig)
 	}
 	

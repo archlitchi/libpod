@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/containers/libpod/cmd/podman/cliconfig"
+	"fmt"
 	"github.com/containers/libpod/libpod/define"
 	"github.com/containers/libpod/pkg/adapter"
 	"github.com/opentracing/opentracing-go"
@@ -45,7 +46,52 @@ func init() {
 	markFlagHiddenForRemoteClient("latest", flags)
 }
 
+//Restfulinit init command function for api server
+func Restfulstartinit() *cliconfig.StartValues{
+
+	var restfulstartCommand     cliconfig.StartValues
+	restfulstartCommand.PodmanCommand.Command = &cobra.Command{
+		Use:   "start [flags] CONTAINER [CONTAINER...]",
+		Short: "Start one or more containers",
+		Long:  startDescription,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			restfulstartCommand.InputArgs = args
+			restfulstartCommand.GlobalFlags = MainGlobalOpts
+			restfulstartCommand.Remote = remoteclient
+			return startCmd(&restfulstartCommand)
+		},
+		Example: `podman start --latest
+  		podman start 860a4b231279 5421ab43b45
+  		podman start --interactive --attach imageID`,
+	}	
+	restfulstartCommand.SetHelpTemplate(HelpTemplate())
+	restfulstartCommand.SetUsageTemplate(UsageTemplate())
+	flags := restfulstartCommand.Flags()
+	flags.BoolVarP(&restfulstartCommand.Attach, "attach", "a", false, "Attach container's STDOUT and STDERR")
+	// Clear the default, the value specified in the config file should have the
+	// priority
+	restfulstartCommand.DetachKeys = ""
+	flags.StringVar(&restfulstartCommand.DetachKeys, "detach-keys", define.DefaultDetachKeys, "Select the key sequence for detaching a container. Format is a single character `[a-Z]` or a comma separated sequence of `ctrl-<value>`, where `<value>` is one of: `a-z`, `@`, `^`, `[`, `\\`, `]`, `^` or `_`")
+	flags.BoolVarP(&restfulstartCommand.Interactive, "interactive", "i", false, "Keep STDIN open even if not attached")
+	flags.BoolVarP(&restfulstartCommand.Latest, "latest", "l", false, "Act on the latest container podman is aware of")
+	flags.BoolVar(&startCommand.SigProxy, "sig-proxy", false, "Proxy received signals to the process (default true if attaching, false otherwise)")
+	markFlagHiddenForRemoteClient("latest", flags)
+	return &restfulstartCommand
+}
+
+// Getcreatecommand Generate cobra.command struct for restful api
+func Getstartcommandfunc() func()*cliconfig.StartValues{
+	return Restfulstartinit
+}
+
+// CreateCmd Called from restfulAPI to execute create command
+func StartCmd(c *cliconfig.StartValues) error {
+	return startCmd(c)
+}
+
 func startCmd(c *cliconfig.StartValues) error {
+	fmt.Println("start",c,"args",c.InputArgs)
+	
 	if !remoteclient && c.Bool("trace") {
 		span, _ := opentracing.StartSpanFromContext(Ctx, "startCmd")
 		defer span.Finish()

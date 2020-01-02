@@ -48,7 +48,7 @@ func init() {
 }
 
 //Restfulinit init command function for api server
-func Restfulinit() *cliconfig.CreateValues{
+func Restfulcreateinit() *cliconfig.CreateValues{
 	var restfulCreatecommand cliconfig.CreateValues
 	restfulCreatecommand.PodmanCommand.Command = &cobra.Command{
 		Use:   "create [flags] IMAGE [COMMAND [ARG...]]",
@@ -76,7 +76,7 @@ func Restfulinit() *cliconfig.CreateValues{
 
 // Getcreatecommand Generate cobra.command struct for restful api
 func Getcreatecommandfunc() func()*cliconfig.CreateValues{
-	return Restfulinit
+	return Restfulcreateinit
 }
 
 // CreateCmd Called from restfulAPI to execute create command

@@ -10,7 +10,6 @@ import (
 
 	"github.com/containers/buildah/pkg/formats"
 	"github.com/containers/libpod/cmd/podman/cliconfig"
-	"github.com/containers/libpod/restful"
 	"github.com/containers/libpod/libpod/define"
 	"github.com/containers/libpod/pkg/adapter"
 	"github.com/pkg/errors"
@@ -115,29 +114,7 @@ func versionCmd(c *cliconfig.VersionValues) error {
 	} else {
 		formatVersion(w, v.Client)
 	}
-	startserver()
 	return nil
-}
-
-func SetCommand(){
-	restful.SetCreatecommandfunc(Getcreatecommandfunc())
-}
-
-func startserver(){
-	if versionCommand.Flags().Lookup("trace") != nil{
-		fmt.Println("version trace not null!")
-	}
-	fmt.Println(versionCommand.Bool("trace"))
-	s:=restful.New("/home/limengxuan/docker.sock")
-	defer s.Close()
-	fmt.Println("socket established!")
-	restful.RestfulServer = new(cliconfig.RestfulServer)
-	cmdv := restful.RestfulServer
-	cmdv.InitRestfulServer()
-	cmdv.SetContainerCreatecmd(CreateCmd)
-	cmdv.SetMainGlobalOpts(&MainGlobalOpts)
-	SetCommand()
-	s.HandleRequests()
 }
 
 func formatVersion(writer io.Writer, version define.Version) {

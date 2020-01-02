@@ -60,6 +60,7 @@ var mainCommands = []*cobra.Command{
 	_runCommand,
 	_saveCommand,
 	_stopCommand,
+	_startserverCommand,
 	_tagCommand,
 	_topCommand,
 	_unpauseCommand,

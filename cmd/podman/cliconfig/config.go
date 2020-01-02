@@ -635,6 +635,11 @@ type VersionValues struct {
 	Format string
 }
 
+type StartserverValues struct {
+	PodmanCommand
+	SockPath string
+}
+
 type VolumeCreateValues struct {
 	PodmanCommand
 	Driver string
