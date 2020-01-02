@@ -221,6 +221,7 @@ func createcmdfromconfig(w http.ResponseWriter,config *container.Config,hostconf
 
 	var retval string
 	retval,err=RestfulServer.Servercmd.Createcmd(&createCommand)
+	fmt.Println("retval=",retval,"err=",err)
 	if err != nil{
 		respond:=errorcreaterespond{
 			Message: err.Error(),
