@@ -3,6 +3,7 @@ package cliconfig
 import (
 //	"net"
 	"github.com/containers/libpod/pkg/rootless"
+	"github.com/containers/buildah/pkg/formats"
 	"github.com/spf13/pflag"
 	"github.com/sirupsen/logrus"
 //	"github.com/spf13/cobra"
@@ -13,7 +14,7 @@ type RestfulServer struct{
 		Createcmd	func(c *CreateValues) (string,error)
 		Startcmd 	func(c *StartValues) error
 		Removecmd	func(c *RmValues) error
-		Inspectcmd 	func(c *InspectValues) error
+		Inspectcmd 	func(c *InspectValues) (formats.JSONStructArray,error)
 	}
 	MainGlobalOpts	*MainFlags	
 }
@@ -38,7 +39,7 @@ func (r *RestfulServer) SetContainerRemovecmd(f func(c *RmValues) error){
 }
 
 //SetContainerInspectcmd called by cmd/server to set the remove endpoint
-func (r *RestfulServer) SetContainerInspectcmd(f func(c *InspectValues) error){
+func (r *RestfulServer) SetContainerInspectcmd(f func(c *InspectValues) (formats.JSONStructArray,error)){
 	r.Servercmd.Inspectcmd = f
 }
 

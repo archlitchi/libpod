@@ -33,7 +33,6 @@ func setinspecterror(w http.ResponseWriter,code int,err error){
 	http.Error(w,string(str),code)
 }
 
-
 func processInspectQueryParameters(r *http.Request) error{
 	if tmp:=r.URL.Query().Get("size");tmp!=""{
 		inspectCommand.Flags().Lookup("size").Value.Set(tmp)
@@ -59,10 +58,14 @@ func Inspectcontainer(w http.ResponseWriter, r *http.Request){
 		fmt.Println("startreqbody=",reqBody)
 	}
 	inspectCommand.InputArgs = []string{key}
-	err=RestfulServer.Servercmd.Inspectcmd(&inspectCommand)
+	jsarray,err:=RestfulServer.Servercmd.Inspectcmd(&inspectCommand)
 	if err != nil{
 		setinspecterror(w,404,err)
 		return
 	}
+	if len(jsarray.Output) != 0{
+		json.NewEncoder(w).Encode(jsarray)
+	}
+
 	fmt.Println("After running!")
 }

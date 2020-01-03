@@ -38,7 +38,8 @@ var (
 		Example: `podman inspect alpine
   podman inspect --format "imageId: {{.Id}} size: {{.Size}}" alpine
   podman inspect --format "image: {{.ImageName}} driver: {{.Driver}}" myctr`,
- 	}
+	 }
+	 jsonarray formats.JSONStructArray
 )
 //Restfulinspectinit init command function for api server
 func Restfulinspectinit() *cliconfig.InspectValues{
@@ -67,9 +68,11 @@ func Getinspectcommandfunc() func()*cliconfig.InspectValues{
 }
 
 // InspectCmd Called from restfulAPI to execute create command
-func InspectCmd(c *cliconfig.InspectValues) error {
-	return inspectCmd(c)
+func InspectCmd(c *cliconfig.InspectValues) (formats.JSONStructArray,error) {
+	err:=inspectCmd(c)
+	return jsonarray,err
 }
+
 func inspectInit(command *cliconfig.InspectValues) {
 	command.SetHelpTemplate(HelpTemplate())
 	command.SetUsageTemplate(UsageTemplate())
@@ -158,10 +161,12 @@ func inspectCmd(c *cliconfig.InspectValues) error {
 		out = formats.StdoutTemplateArray{Output: inspectedObjects, Template: outputFormat}
 	} else {
 		// default is json output
-		out = formats.JSONStructArray{Output: inspectedObjects}
+		jsonarray = formats.JSONStructArray{Output: inspectedObjects}
+		out = jsonarray
 	}
 	fmt.Println("Inspect before out.out")
-	return out.Out()
+	err = out.Out()
+	return err
 }
 
 // func iterateInput iterates the images|containers the user has requested and returns the inspect data and error
