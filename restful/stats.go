@@ -42,7 +42,7 @@ func processStatsQueryParameters(r *http.Request) error{
 		}else{
 			t="true"
 		}
-		statsCommand.Flags().Lookup("no-steam").Value.Set(t)
+		statsCommand.Flags().Lookup("no-stream").Value.Set(t)
 		statsCommand.NoStream,_ = strconv.ParseBool(t)
 	}
 	return nil
