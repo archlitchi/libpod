@@ -66,6 +66,7 @@ func AddGlobal(p *pflag.FlagSet){
 
 }
 
+//HandleRequests called by cmd/server to set the handler
 func (s* HTTPServer) HandleRequests(){
 	if podrouter == nil {
 		podrouter = mux.NewRouter().StrictSlash(true)
@@ -74,6 +75,7 @@ func (s* HTTPServer) HandleRequests(){
 	podrouter.HandleFunc("/podman/containers/{id}/start",Startcontainer).Methods("POST")
 	podrouter.HandleFunc("/podman/containers/{id}",Removecontainer).Methods("DELETE")
 	podrouter.HandleFunc("/podman/containers/{id}/json",Inspectcontainer).Methods("GET")
+	podrouter.HandleFunc("/podman/containers/{id}/stop",Stopcontainer).Methods("POST")
 	log.Fatal(http.Serve(s.l,podrouter))
 }
 

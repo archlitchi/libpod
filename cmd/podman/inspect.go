@@ -40,12 +40,14 @@ var (
   podman inspect --format "image: {{.ImageName}} driver: {{.Driver}}" myctr`,
 	 }
 	 jsonarray formats.JSONStructArray
+	 blockoutput bool
 )
+
 //Restfulinspectinit init command function for api server
 func Restfulinspectinit() *cliconfig.InspectValues{
 	var restfulinspectCommand     cliconfig.InspectValues
 	restfulinspectCommand.PodmanCommand.Command = &cobra.Command{
-		Use:   "inspect [flags] CONTAINER | IMAGE",
+/*		Use:   "inspect [flags] CONTAINER | IMAGE",
 		Short: "Display the configuration of a container or image",
 		Long:  inspectDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -56,7 +58,7 @@ func Restfulinspectinit() *cliconfig.InspectValues{
 		},
 		Example: `podman inspect alpine
   podman inspect --format "imageId: {{.Id}} size: {{.Size}}" alpine
-  podman inspect --format "image: {{.ImageName}} driver: {{.Driver}}" myctr`,
+  podman inspect --format "image: {{.ImageName}} driver: {{.Driver}}" myctr`,*/
 	}
 	inspectInit(&restfulinspectCommand)
 	return &restfulinspectCommand
@@ -100,6 +102,7 @@ func inspectInit(command *cliconfig.InspectValues) {
 }
 func init() {
 	inspectCommand.Command = &_inspectCommand
+	blockoutput=false
 	inspectInit(&inspectCommand)
 }
 
@@ -164,8 +167,9 @@ func inspectCmd(c *cliconfig.InspectValues) error {
 		jsonarray = formats.JSONStructArray{Output: inspectedObjects}
 		out = jsonarray
 	}
-	fmt.Println("Inspect before out.out")
-	err = out.Out()
+	if !blockoutput{
+		err = out.Out()
+	}
 	return err
 }
 

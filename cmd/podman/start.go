@@ -74,7 +74,7 @@ func Restfulstartinit() *cliconfig.StartValues{
 	flags.StringVar(&restfulstartCommand.DetachKeys, "detach-keys", define.DefaultDetachKeys, "Select the key sequence for detaching a container. Format is a single character `[a-Z]` or a comma separated sequence of `ctrl-<value>`, where `<value>` is one of: `a-z`, `@`, `^`, `[`, `\\`, `]`, `^` or `_`")
 	flags.BoolVarP(&restfulstartCommand.Interactive, "interactive", "i", false, "Keep STDIN open even if not attached")
 	flags.BoolVarP(&restfulstartCommand.Latest, "latest", "l", false, "Act on the latest container podman is aware of")
-	flags.BoolVar(&startCommand.SigProxy, "sig-proxy", false, "Proxy received signals to the process (default true if attaching, false otherwise)")
+	flags.BoolVar(&restfulstartCommand.SigProxy, "sig-proxy", false, "Proxy received signals to the process (default true if attaching, false otherwise)")
 	markFlagHiddenForRemoteClient("latest", flags)
 	return &restfulstartCommand
 }

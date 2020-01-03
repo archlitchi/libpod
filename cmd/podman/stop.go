@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/containers/libpod/cmd/podman/cliconfig"
+	"fmt"
 	"github.com/containers/libpod/libpod/define"
 	"github.com/containers/libpod/pkg/adapter"
 	"github.com/opentracing/opentracing-go"
@@ -49,8 +50,55 @@ func init() {
 	markFlagHiddenForRemoteClient("ignore", flags)
 }
 
+
+//Restfulstopinit init command function for api server
+func Restfulstopinit() *cliconfig.StopValues{
+	var restfulstopCommand     cliconfig.StopValues
+	restfulstopCommand.PodmanCommand.Command = &cobra.Command{
+		Use:   "stop [flags] CONTAINER [CONTAINER...]",
+		Short: "Stop one or more containers",
+		Long:  stopDescription,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			restfulstopCommand.InputArgs = args
+			restfulstopCommand.GlobalFlags = MainGlobalOpts
+			restfulstopCommand.Remote = remoteclient
+			return stopCmd(&restfulstopCommand)
+		},
+		Args: func(cmd *cobra.Command, args []string) error {
+			return checkAllLatestAndCIDFile(cmd, args, false, true)
+		},
+		Example: `podman stop ctrID
+  podman stop --latest
+  podman stop --timeout 2 mywebserver 6e534f14da9d`,
+	}
+	restfulstopCommand.SetHelpTemplate(HelpTemplate())
+	restfulstopCommand.SetUsageTemplate(UsageTemplate())
+	flags := restfulstopCommand.Flags()
+	flags.BoolVarP(&restfulstopCommand.All, "all", "a", false, "Stop all running containers")
+	flags.BoolVarP(&restfulstopCommand.Ignore, "ignore", "i", false, "Ignore errors when a specified container is missing")
+	flags.StringArrayVarP(&restfulstopCommand.CIDFiles, "cidfile", "", nil, "Read the container ID from the file")
+	flags.BoolVarP(&restfulstopCommand.Latest, "latest", "l", false, "Act on the latest container podman is aware of")
+	flags.UintVar(&restfulstopCommand.Timeout, "time", define.CtrRemoveTimeout, "Seconds to wait for stop before killing the container")
+	flags.UintVarP(&restfulstopCommand.Timeout, "timeout", "t", define.CtrRemoveTimeout, "Seconds to wait for stop before killing the container")
+	markFlagHiddenForRemoteClient("latest", flags)
+	markFlagHiddenForRemoteClient("cidfile", flags)
+	markFlagHiddenForRemoteClient("ignore", flags)
+	return &restfulstopCommand
+}
+
+// Getstopcommandfunc Generate cobra.command struct for restful api
+func Getstopcommandfunc() func()*cliconfig.StopValues{
+	return Restfulstopinit
+}
+
+// StopCmd Called from restfulAPI to execute stop command
+func StopCmd(c *cliconfig.StopValues) error {
+	return stopCmd(c)
+}
+
 // stopCmd stops a container or containers
 func stopCmd(c *cliconfig.StopValues) error {
+	fmt.Println("stopcmd:",c.InputArgs,"time",c.Timeout)
 	if c.Flag("timeout").Changed && c.Flag("time").Changed {
 		return errors.New("the --timeout and --time flags are mutually exclusive")
 	}

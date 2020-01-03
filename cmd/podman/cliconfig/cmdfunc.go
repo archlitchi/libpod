@@ -9,12 +9,14 @@ import (
 //	"github.com/spf13/cobra"
 )
 
+//RestfulServer provides all the necessary data from podman  
 type RestfulServer struct{
 	Servercmd	struct{
 		Createcmd	func(c *CreateValues) (string,error)
 		Startcmd 	func(c *StartValues) error
 		Removecmd	func(c *RmValues) error
 		Inspectcmd 	func(c *InspectValues) (formats.JSONStructArray,error)
+		Stopcmd		func(c *StopValues) error
 	}
 	MainGlobalOpts	*MainFlags	
 }
@@ -41,6 +43,11 @@ func (r *RestfulServer) SetContainerRemovecmd(f func(c *RmValues) error){
 //SetContainerInspectcmd called by cmd/server to set the remove endpoint
 func (r *RestfulServer) SetContainerInspectcmd(f func(c *InspectValues) (formats.JSONStructArray,error)){
 	r.Servercmd.Inspectcmd = f
+}
+
+//SetContainerStopcmd called by cmd/server to set the remove endpoint
+func (r *RestfulServer) SetContainerStopcmd(f func(c *StopValues) error){
+	r.Servercmd.Stopcmd = f
 }
 
 //SetMainGlobalOpts called by cmd/server to set default podman configs
