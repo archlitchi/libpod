@@ -50,7 +50,7 @@ func Inspectcontainer(w http.ResponseWriter, r *http.Request){
 	AddGlobal(inspectCommand.PodmanCommand.Flags())
 	err:=processInspectQueryParameters(r)
 	if err!=nil{
-		setremoveerror(w,400,err)
+		setinspecterror(w,400,err)
 		return
 	}
 	reqBody,_ := ioutil.ReadAll(r.Body)

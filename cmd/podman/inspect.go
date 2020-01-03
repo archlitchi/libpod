@@ -39,8 +39,8 @@ var (
   podman inspect --format "imageId: {{.Id}} size: {{.Size}}" alpine
   podman inspect --format "image: {{.ImageName}} driver: {{.Driver}}" myctr`,
 	 }
-	 jsonarray formats.JSONStructArray
-	 blockoutput bool
+	 inspectjsonarray formats.JSONStructArray
+	 inspectblockoutput bool
 )
 
 //Restfulinspectinit init command function for api server
@@ -70,7 +70,7 @@ func Getinspectcommandfunc() func()*cliconfig.InspectValues{
 // InspectCmd Called from restfulAPI to execute create command
 func InspectCmd(c *cliconfig.InspectValues) (formats.JSONStructArray,error) {
 	err:=inspectCmd(c)
-	return jsonarray,err
+	return inspectjsonarray,err
 }
 
 func inspectInit(command *cliconfig.InspectValues) {
@@ -100,7 +100,7 @@ func inspectInit(command *cliconfig.InspectValues) {
 }
 func init() {
 	inspectCommand.Command = &_inspectCommand
-	blockoutput=false
+	inspectblockoutput=false
 	inspectInit(&inspectCommand)
 }
 
@@ -162,11 +162,12 @@ func inspectCmd(c *cliconfig.InspectValues) error {
 		out = formats.StdoutTemplateArray{Output: inspectedObjects, Template: outputFormat}
 	} else {
 		// default is json output
-		jsonarray = formats.JSONStructArray{Output: inspectedObjects}
-		out = jsonarray
+		out = inspectjsonarray
 	}
-	if !blockoutput{
+	if !inspectblockoutput{
 		err = out.Out()
+	}else{
+		inspectjsonarray = formats.JSONStructArray{Output: inspectedObjects}
 	}
 	return err
 }

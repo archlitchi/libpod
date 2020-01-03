@@ -17,6 +17,7 @@ type RestfulServer struct{
 		Removecmd	func(c *RmValues) error
 		Inspectcmd 	func(c *InspectValues) (formats.JSONStructArray,error)
 		Stopcmd		func(c *StopValues) error
+		Statscmd 	func(c *StatsValues) (formats.JSONStructArray,error)
 	}
 	MainGlobalOpts	*MainFlags	
 }
@@ -48,6 +49,11 @@ func (r *RestfulServer) SetContainerInspectcmd(f func(c *InspectValues) (formats
 //SetContainerStopcmd called by cmd/server to set the remove endpoint
 func (r *RestfulServer) SetContainerStopcmd(f func(c *StopValues) error){
 	r.Servercmd.Stopcmd = f
+}
+
+//SetContainerInspectcmd called by cmd/server to set the remove endpoint
+func (r *RestfulServer) SetContainerStatscmd(f func(c *StatsValues) (formats.JSONStructArray,error)){
+	r.Servercmd.Statscmd = f
 }
 
 //SetMainGlobalOpts called by cmd/server to set default podman configs

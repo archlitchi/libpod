@@ -42,6 +42,7 @@ func setinitCommand(){
 	restful.SetRemovecommandfunc(Getremovecommandfunc())
 	restful.SetInspectcommandfunc(Getinspectcommandfunc())
 	restful.SetStopcommandfunc(Getstopcommandfunc())
+	restful.SetStatscommandfunc(Getstatscommandfunc())
 }
 
 func startserver(c *cliconfig.StartserverValues){
@@ -60,6 +61,7 @@ func startserver(c *cliconfig.StartserverValues){
 	cmdv.SetContainerRemovecmd(RemoveCmd)
 	cmdv.SetContainerInspectcmd(InspectCmd)
 	cmdv.SetContainerStopcmd(StopCmd)
+	cmdv.SetContainerStatscmd(StatsCmd)
 	cmdv.SetMainGlobalOpts(&MainGlobalOpts)
 	setinitCommand()
 	s.HandleRequests()

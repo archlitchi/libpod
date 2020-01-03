@@ -48,19 +48,57 @@ var (
   podman stats ctrID
   podman stats --no-stream --format "table {{.ID}} {{.Name}} {{.MemUsage}}" ctrID`,
 	}
+	statsjsonarray formats.JSONStructArray
+	statsblockoutput	bool
 )
+
+func statsinit(command *cliconfig.StatsValues){
+	command.SetHelpTemplate(HelpTemplate())
+	command.SetUsageTemplate(UsageTemplate())
+	flags := command.Flags()
+	flags.BoolVarP(&command.All, "all", "a", false, "Show all containers. Only running containers are shown by default. The default is false")
+	flags.StringVar(&command.Format, "format", "", "Pretty-print container statistics to JSON or using a Go template")
+	flags.BoolVarP(&command.Latest, "latest", "l", false, "Act on the latest container podman is aware of")
+	flags.BoolVar(&command.NoReset, "no-reset", false, "Disable resetting the screen between intervals")
+	flags.BoolVar(&command.NoStream, "no-stream", false, "Disable streaming stats and only pull the first result, default setting is false")
+	markFlagHiddenForRemoteClient("latest", flags)
+}
 
 func init() {
 	statsCommand.Command = _statsCommand
-	statsCommand.SetHelpTemplate(HelpTemplate())
-	statsCommand.SetUsageTemplate(UsageTemplate())
-	flags := statsCommand.Flags()
-	flags.BoolVarP(&statsCommand.All, "all", "a", false, "Show all containers. Only running containers are shown by default. The default is false")
-	flags.StringVar(&statsCommand.Format, "format", "", "Pretty-print container statistics to JSON or using a Go template")
-	flags.BoolVarP(&statsCommand.Latest, "latest", "l", false, "Act on the latest container podman is aware of")
-	flags.BoolVar(&statsCommand.NoReset, "no-reset", false, "Disable resetting the screen between intervals")
-	flags.BoolVar(&statsCommand.NoStream, "no-stream", false, "Disable streaming stats and only pull the first result, default setting is false")
-	markFlagHiddenForRemoteClient("latest", flags)
+	statsblockoutput = false
+	statsinit(&statsCommand)
+}
+
+//Restfulstatsinit init command function for api server
+func Restfulstatsinit() *cliconfig.StatsValues{
+	var restfulstatsCommand     cliconfig.StatsValues
+	restfulstatsCommand.PodmanCommand.Command = &cobra.Command{
+		Use:   _statsCommand.Use,
+		Short: _statsCommand.Short,
+		Long:  statsDescription,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			restfulstatsCommand.InputArgs = args
+			restfulstatsCommand.GlobalFlags = MainGlobalOpts
+			restfulstatsCommand.Remote = remoteclient
+			return statsCmd(&restfulstatsCommand)
+		},
+		Example: _statsCommand.Example,
+	}
+	statsinit(&restfulstatsCommand)
+	statsblockoutput = true
+	return &restfulstatsCommand
+}
+
+// Getstatscommandfunc Generate cobra.command struct for restful api
+func Getstatscommandfunc() func()*cliconfig.StatsValues{
+	return Restfulstatsinit
+}
+
+// StatsCmd Called from restfulAPI to execute create command
+func StatsCmd(c *cliconfig.StatsValues) (formats.JSONStructArray,error) {
+	err:=statsCmd(c)
+	return statsjsonarray,err
 }
 
 func statsCmd(c *cliconfig.StatsValues) error {
@@ -191,6 +229,7 @@ func statsCmd(c *cliconfig.StatsValues) error {
 func outputStats(stats []*libpod.ContainerStats, format string) error {
 	var out formats.Writer
 	var outputStats []statsOutputParams
+	var err error
 	for _, s := range stats {
 		outputStats = append(outputStats, getStatsOutputParams(s))
 	}
@@ -206,7 +245,12 @@ func outputStats(stats []*libpod.ContainerStats, format string) error {
 		}
 		out = formats.StdoutTemplateArray{Output: statsToGeneric(outputStats, []statsOutputParams{}), Template: format, Fields: mapOfHeaders}
 	}
-	return out.Out()
+	if !statsblockoutput{
+		err=out.Out()
+	}else{
+		statsjsonarray = formats.JSONStructArray{Output: statsToGeneric(outputStats, []statsOutputParams{})} 
+	}
+	return err
 }
 
 func genStatsFormat(format string) string {

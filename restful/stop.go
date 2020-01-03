@@ -19,7 +19,7 @@ type errorstoprespond struct{
 	Message string `json:"message"`
 }
 
-//SetStopcommandfunc called by cmd/server to set the endpoint of remove command
+//SetStopcommandfunc called by cmd/server to set the endpoint of stop command
 func SetStopcommandfunc(f func()*cliconfig.StopValues){
 	reinitstopCommand = f
 }
@@ -48,7 +48,7 @@ func Stopcontainer(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Stopcontainer",key)
 	stopCommand=*reinitstopCommand()
 	AddGlobal(stopCommand.PodmanCommand.Flags())
-	err:=processRemoveQueryParameters(r)
+	err:=processStopQueryParameters(r)
 	if err!=nil{
 		setstoperror(w,400,err)
 		return
