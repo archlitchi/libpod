@@ -47,8 +47,8 @@ var (
 func Restfulinspectinit() *cliconfig.InspectValues{
 	var restfulinspectCommand     cliconfig.InspectValues
 	restfulinspectCommand.PodmanCommand.Command = &cobra.Command{
-		Use:   "inspect [flags] CONTAINER | IMAGE",
-		Short: "Display the configuration of a container or image",
+		Use:   _inspectCommand.Use,
+		Short: _inspectCommand.Short,
 		Long:  inspectDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restfulinspectCommand.InputArgs = args
@@ -56,9 +56,7 @@ func Restfulinspectinit() *cliconfig.InspectValues{
 			restfulinspectCommand.Remote = remoteclient
 			return inspectCmd(&restfulinspectCommand)
 		},
-		Example: `podman inspect alpine
-  podman inspect --format "imageId: {{.Id}} size: {{.Size}}" alpine
-  podman inspect --format "image: {{.ImageName}} driver: {{.Driver}}" myctr`,
+		Example: _inspectCommand.Example,
 	}
 	inspectInit(&restfulinspectCommand)
 	return &restfulinspectCommand
