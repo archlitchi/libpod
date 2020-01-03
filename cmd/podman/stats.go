@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"time"
+	"net/http"
 
 	tm "github.com/buger/goterm"
 	"github.com/containers/buildah/pkg/formats"
@@ -49,6 +50,7 @@ var (
   podman stats --no-stream --format "table {{.ID}} {{.Name}} {{.MemUsage}}" ctrID`,
 	}
 	statsjsonarray formats.JSONStructArray
+	restfulClientWriter	http.ResponseWriter
 	statsblockoutput	bool
 )
 
@@ -96,13 +98,13 @@ func Getstatscommandfunc() func()*cliconfig.StatsValues{
 }
 
 // StatsCmd Called from restfulAPI to execute create command
-func StatsCmd(c *cliconfig.StatsValues) (formats.JSONStructArray,error) {
+func StatsCmd(c *cliconfig.StatsValues,w http.ResponseWriter) error {
 	err:=statsCmd(c)
-	return statsjsonarray,err
+	restfulClientWriter = w
+	return err
 }
 
 func statsCmd(c *cliconfig.StatsValues) error {
-	fmt.Println("statscmd",c.InputArgs,"no-stream",c.NoStream)
 	if rootless.IsRootless() {
 		unified, err := cgroups.IsCgroup2UnifiedMode()
 		if err != nil {
@@ -250,6 +252,7 @@ func outputStats(stats []*libpod.ContainerStats, format string) error {
 		err=out.Out()
 	}else{
 		statsjsonarray = formats.JSONStructArray{Output: statsToGeneric(outputStats, []statsOutputParams{})} 
+		json.NewEncoder(restfulClientWriter).Encode(statsjsonarray)
 	}
 	return err
 }

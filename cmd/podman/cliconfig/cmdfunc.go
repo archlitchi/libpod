@@ -1,7 +1,7 @@
 package cliconfig
 
 import (
-//	"net"
+	"net/http"
 	"github.com/containers/libpod/pkg/rootless"
 	"github.com/containers/buildah/pkg/formats"
 	"github.com/spf13/pflag"
@@ -17,7 +17,7 @@ type RestfulServer struct{
 		Removecmd	func(c *RmValues) error
 		Inspectcmd 	func(c *InspectValues) (formats.JSONStructArray,error)
 		Stopcmd		func(c *StopValues) error
-		Statscmd 	func(c *StatsValues) (formats.JSONStructArray,error)
+		Statscmd 	func(c *StatsValues,w http.ResponseWriter) error
 	}
 	MainGlobalOpts	*MainFlags	
 }
@@ -52,7 +52,7 @@ func (r *RestfulServer) SetContainerStopcmd(f func(c *StopValues) error){
 }
 
 //SetContainerInspectcmd called by cmd/server to set the remove endpoint
-func (r *RestfulServer) SetContainerStatscmd(f func(c *StatsValues) (formats.JSONStructArray,error)){
+func (r *RestfulServer) SetContainerStatscmd(f func(c *StatsValues, w http.ResponseWriter) error){
 	r.Servercmd.Statscmd = f
 }
 

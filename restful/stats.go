@@ -65,13 +65,10 @@ func Statscontainer(w http.ResponseWriter, r *http.Request){
 		fmt.Println("statsreqbody=",reqBody)
 	}
 	statsCommand.InputArgs = []string{key}
-	jsarray,err:=RestfulServer.Servercmd.Statscmd(&statsCommand)
+	err=RestfulServer.Servercmd.Statscmd(&statsCommand,w)
 	if err != nil{
 		setstatserror(w,404,err)
 		return
-	}
-	if len(jsarray.Output) != 0{
-		json.NewEncoder(w).Encode(jsarray)
 	}
 	fmt.Println("After running!")
 }
