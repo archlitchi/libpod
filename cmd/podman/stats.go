@@ -102,6 +102,7 @@ func StatsCmd(c *cliconfig.StatsValues) (formats.JSONStructArray,error) {
 }
 
 func statsCmd(c *cliconfig.StatsValues) error {
+	fmt.Println("statscmd",c.InputArgs,"no-stream",c.NoStream)
 	if rootless.IsRootless() {
 		unified, err := cgroups.IsCgroup2UnifiedMode()
 		if err != nil {
