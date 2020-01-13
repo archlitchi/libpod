@@ -138,7 +138,7 @@ func imagesCmd(c *cliconfig.ImagesValues) error {
 	var (
 		image string
 	)
-
+	fmt.Println("imagesCmd",c.InputArgs,"filter:",c.Filter)
 	ctx := getContext()
 	runtime, err := adapter.GetRuntime(getContext(), &c.PodmanCommand)
 	if err != nil {

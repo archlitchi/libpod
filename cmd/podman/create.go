@@ -36,7 +36,6 @@ var (
 )
 
 func init() {
-	fmt.Println("create______:init")
 	createCommand.PodmanCommand.Command = _createCommand
 	createCommand.SetHelpTemplate(HelpTemplate())
 	createCommand.SetUsageTemplate(UsageTemplate())
