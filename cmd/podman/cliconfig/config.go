@@ -107,6 +107,8 @@ type UpdateValues struct {
 	Memory_reservation 	int
 	Memory_swap 	int
 	Restart 	string
+	All            bool
+	Latest         bool
 }
 
 type CheckpointValues struct {

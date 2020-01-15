@@ -715,6 +715,21 @@ func (c *Container) checkpointRestoreLabelLog(fileName string) (err error) {
 	return nil
 }
 
+func (c *Container) update(ctx context.Context) (err error) {
+	fmt.Println("into container_internal_linux:",c.Name())
+	if err:=c.ociRuntime.UpdateContainer(c); err!=nil{
+		return err
+	}
+
+	config,_:=c.runtime.state.GetContainerConfig(c.ID())
+	fmt.Println("resources1=",config.Spec.Linux.Resources)
+	*config.Spec.Linux.Resources.Memory.Reservation=50000000
+	c.runtime.state.RewriteContainerConfig(c,config)
+	fmt.Println("resources1=",config.Spec.Linux.Resources)
+//	defer c.newContainerEvent(events.Checkpoint)
+	return c.save()
+}
+
 func (c *Container) checkpoint(ctx context.Context, options ContainerCheckpointOptions) (err error) {
 	if err := c.checkpointRestoreSupported(); err != nil {
 		return err

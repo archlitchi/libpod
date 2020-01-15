@@ -55,6 +55,8 @@ func init() {
 	flags.IntVar(&updateCommand.Memory_reservation, "memory_reservation", -1, "[x]Memory soft limit")
 	flags.IntVar(&updateCommand.Memory_swap, "memory_swap", 0, "[x]Swap limit equal to memory plus swap: '-1' to enable unlimited swap")
 	flags.StringVar(&updateCommand.Restart, "restart","", "[x]Restart policy to apply when a container exits")
+	flags.BoolVarP(&updateCommand.All, "all", "a", false, "Checkpoint all running containers")
+	flags.BoolVarP(&updateCommand.Latest, "latest", "l", false, "Act on the latest container podman is aware of")
 	markFlagHiddenForRemoteClient("latest", flags)
 }
 

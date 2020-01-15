@@ -2,6 +2,7 @@ package libpod
 
 import (
 	"bufio"
+	"fmt"
 	"context"
 	"io"
 	"io/ioutil"
@@ -818,6 +819,17 @@ type ContainerCheckpointOptions struct {
 	// important to be able to restore a container multiple
 	// times with '--import --name'.
 	IgnoreStaticMAC bool
+}
+
+// Update updates a container
+func (c *Container) Update(ctx context.Context) error {
+	fmt.Println("ctr Update")
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if err := c.syncContainer(); err != nil {
+		return err
+	}
+	return c.update(ctx)
 }
 
 // Checkpoint checkpoints a container

@@ -63,7 +63,8 @@ type OCIRuntime interface {
 	// It removes any files left by the exec session that are no longer
 	// needed, including the attach socket.
 	ExecContainerCleanup(ctr *Container, sessionID string) error
-
+	// UpdateContainer updates the given container
+	UpdateContainer(ctr *Container) error
 	// CheckpointContainer checkpoints the given container.
 	// Some OCI runtimes may not support this - if SupportsCheckpoint()
 	// returns false, this is not implemented, and will always return an

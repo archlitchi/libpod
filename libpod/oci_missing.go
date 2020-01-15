@@ -78,7 +78,10 @@ func (r *MissingRuntime) UpdateContainerStatus(ctr *Container) error {
 func (r *MissingRuntime) StartContainer(ctr *Container) error {
 	return r.printError()
 }
-
+// UpdateContainer is not available as the runtime is missing
+func (r *MissingRuntime) UpdateContainer(ctr *Container) error {
+	return r.printError()
+}
 // KillContainer is not available as the runtime is missing
 // TODO: We could attempt to unix.Kill() the PID as recorded in the state if we
 // really want to smooth things out? Won't be perfect, but if the container has

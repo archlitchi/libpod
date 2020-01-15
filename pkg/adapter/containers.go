@@ -547,6 +547,32 @@ func (r *LocalRuntime) Attach(ctx context.Context, c *cliconfig.AttachValues) er
 	return nil
 }
 
+// Update one or more contaienrs
+func (r *LocalRuntime) Update(c *cliconfig.UpdateValues) error {
+	var (
+		containers     []*libpod.Container
+		err, lastError error
+	)
+
+	containers, err = shortcuts.GetContainersByContext(false, c.Latest, c.InputArgs, r.Runtime)
+	if err!=nil{
+		fmt.Println("Update error:",err.Error())
+		return err
+	}
+
+	for _, ctr := range containers {
+		if err = ctr.Update(context.TODO()); err != nil {
+			if lastError != nil {
+				fmt.Fprintln(os.Stderr, lastError)
+			}
+			lastError = errors.Wrapf(err, "failed to update container %v", ctr.ID())
+		} else {
+			fmt.Println(ctr.ID())
+		}
+	}
+	return lastError
+}
+
 // Checkpoint one or more containers
 func (r *LocalRuntime) Checkpoint(c *cliconfig.CheckpointValues) error {
 	var (

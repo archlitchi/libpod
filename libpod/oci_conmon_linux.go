@@ -720,6 +720,12 @@ func (r *ConmonOCIRuntime) ExecContainerCleanup(ctr *Container, sessionID string
 	return nil
 }
 
+// UpdateContainer updates the given container
+func (r *ConmonOCIRuntime) UpdateContainer(ctr *Container) error{
+	fmt.Println("Into UpdateContainer")
+	return nil
+}
+
 // CheckpointContainer checkpoints the given container.
 func (r *ConmonOCIRuntime) CheckpointContainer(ctr *Container, options ContainerCheckpointOptions) error {
 	if err := label.SetSocketLabel(ctr.ProcessLabel()); err != nil {
