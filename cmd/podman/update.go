@@ -72,6 +72,6 @@ func updateCmd(c *cliconfig.UpdateValues) error {
 	}
 
 	defer runtime.DeferredShutdown(false)
-	return nil;
-	//	return runtime.Checkpoint(c)
+	//return nil;
+		return runtime.Update(c)
 }

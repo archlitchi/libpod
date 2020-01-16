@@ -722,10 +722,14 @@ func (c *Container) update(ctx context.Context) (err error) {
 	}
 
 	config,_:=c.runtime.state.GetContainerConfig(c.ID())
-	fmt.Println("resources1=",config.Spec.Linux.Resources)
-	*config.Spec.Linux.Resources.Memory.Reservation=50000000
+	fmt.Println("resources1=",config.Spec.Linux.Resources.Memory)
+	memoryreserve:=int64(50000000)
+	config.Spec.Linux.Resources.Memory.Reservation=&memoryreserve
 	c.runtime.state.RewriteContainerConfig(c,config)
-	fmt.Println("resources1=",config.Spec.Linux.Resources)
+	c.saveSpec(config.Spec)
+	fmt.Println("resources1=",config.Spec.Linux.Resources.Memory)
+	config,_=c.runtime.state.GetContainerConfig(c.ID())
+	fmt.Println("resources1=",config.Spec.Linux.Resources.Memory)
 //	defer c.newContainerEvent(events.Checkpoint)
 	return c.save()
 }

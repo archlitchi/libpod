@@ -602,6 +602,11 @@ func (r *LocalRuntime) Attach(ctx context.Context, c *cliconfig.AttachValues) er
 	return <-errChan
 }
 
+// Update one or more containers
+func (r *LocalRuntime) Update(c *cliconfig.UpdateValues) error {
+	return nil
+}
+
 // Checkpoint one or more containers
 func (r *LocalRuntime) Checkpoint(c *cliconfig.CheckpointValues) error {
 	if c.Export != "" {
